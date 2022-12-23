@@ -9,55 +9,43 @@ from pyrogram import filters, Client
 from Process.main import bot as app
 from RaiChu.config import SUDO_USERS as SUDOERS
 
-@app.on_message(filters.command("speedtest") & ~filters.edited)
-async def run_speedtest(_, message):
-    userid = message.from_user.id
-    m = await message.reply_text("__Processing__...")
+def testspeed(m):
     try:
         test = speedtest.Speedtest()
         test.get_best_server()
-        m = await m.edit("🔥 __running download speedtest__")
+        m = m.edit("Running Download SpeedTest")
         test.download()
-        m = await m.edit("🔥 __running upload speedtest__")
+        m = m.edit("Running Upload SpeedTest")
         test.upload()
         test.results.share()
-    except speedtest.ShareResultsConnectFailure:
-        pass
+        result = test.results.dict()
+        m = m.edit("Sharing SpeedTest Results")
     except Exception as e:
-        await m.edit_text(e)
-        return
-    result = test.results.dict()
-    m = await m.edit_text("💠 Sharing Speedtest")
-    if result["share"]:
-        path = wget.download(result["share"])
-        try:
-            img = Image.open(path)
-            c = img.crop((17, 11, 727, 389))
-            c.save(path)
-        except BaseException:
-            pass
-    output = f"""💡 **SpeedTest Results**
+        return m.edit(e)
+    return result
+
+
+@app.on_message(filters.command("speedtest") & ~filters.edited)
+async def run_speedtest(_, message):
+    userid = message.from_user.id
+    m = await message.reply_text("Running Speed test")
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, testspeed, m)
+    output = f"""**Speedtest Results**
     
 <u>**Client:**</u>
-
-**ISP:** {result['client']['isp']}
-**Country:** {result['client']['country']}
+**__ISP:__** {result['client']['isp']}
+**__Country:__** {result['client']['country']}
   
 <u>**Server:**</u>
-
-**Name:** {result['server']['name']}
-**Country:** {result['server']['country']}, {result['server']['cc']}
-**Sponsor:** {result['server']['sponsor']}
-**Latency:** {result['server']['latency']}  
-
-⚡ **Ping:** {result['ping']}"""
-    if result["share"]:
-        msg = await app.send_photo(
-            chat_id=message.chat.id, photo=path, caption=output
-        )
-        os.remove(path)
-    else:
-        msg = await app.send_message(
-            chat_id=message.chat.id, text=output
-        )
+**__Name:__** {result['server']['name']}
+**__Country:__** {result['server']['country']}, {result['server']['cc']}
+**__Sponsor:__** {result['server']['sponsor']}
+**__Latency:__** {result['server']['latency']}  
+**__Ping:__** {result['ping']}"""
+    msg = await app.send_photo(
+        chat_id=message.chat.id, 
+        photo=result["share"], 
+        caption=output
+    )
     await m.delete()
