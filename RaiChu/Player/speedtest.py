@@ -1,6 +1,7 @@
 import os
 import wget
 import speedtest
+import asyncio
 
 from PIL import Image
 from pyrogram.types import Message
