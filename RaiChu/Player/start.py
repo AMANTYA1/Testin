@@ -40,8 +40,8 @@ async def _human_time_duration(seconds):
 async def start(_, message: Message):
         await message.reply_text(
         f"""Hello {message.from_user.mention()}, My name is {BOT_NAME}.
-I'm a telegram streaming bot with some useful features.
-Feel free to add me to your groups.
+**I'm a telegram streaming bot with some useful features.
+Feel free to add me to your groups And He/She Deploying I'm Heroku If you want your own Music Bot This type Pm @Mecorw**.
         """,
         reply_markup=InlineKeyboardMarkup(
             [
